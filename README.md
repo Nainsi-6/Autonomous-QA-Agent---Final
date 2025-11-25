@@ -1,5 +1,7 @@
 🤖 Autonomous QA Agent: RAG-Powered Test Generation
+
 🌟 Project Overview
+
 The Autonomous QA Agent is a sophisticated, three-phase system designed to fully automate the creation of software testing artifacts—from test case generation to runnable Selenium scripts. It leverages a Retrieval-Augmented Generation (RAG) pipeline to ensure all generated assets are directly grounded in the provided project documentation and target HTML code.
 
 The project demonstrates expertise in LLM orchestration, microservices using FastAPI, modern web development with Streamlit, and adherence to automation best practices.
