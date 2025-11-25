@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechGear - Secure Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Blue-600
+                        success: '#16a34a', // Green-600 (Required by UI Guide)
+                        error: '#dc2626',   // Red-600 (Required by UI Guide)
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for cart area if needed */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        
+        /* Radio card selected state styling */
+        input[type="radio"]:checked + div {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 1px #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3"></div>
+
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-gray-900 leading-none">TechGear</h1>
+                    <p class="text-xs text-gray-500 font-medium">Official Store</p>
+                </div>
+            </div>
+            <div class="relative cursor-pointer group">
+                <div class="p-2 rounded-full hover:bg-gray-100 transition relative">
+                    <i class="fa-solid fa-cart-shopping text-gray-600 text-xl group-hover:text-blue-600 transition"></i>
+                    <span id="cart-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center transform scale-0 transition-transform duration-200">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <div class="lg:col-span-7 space-y-6">
+                
+                <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-2 mb-6 border-b pb-4">
+                        <i class="fa-solid fa-shop text-blue-500"></i>
+                        <h2 class="text-lg font-bold text-gray-800">Available Products</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="group border border-gray-200 rounded-xl p-4 hover:shadow-md transition duration-200 hover:border-blue-200 bg-white">
+                            <div class="h-40 bg-gray-50 rounded-lg mb-4 flex items-center justify-center text-gray-300 group-hover:bg-blue-50 transition relative overflow-hidden">
+                                <i class="fa-solid fa-headphones text-5xl group-hover:scale-110 transition duration-300 text-gray-400 group-hover:text-blue-400"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900">Noise-Cancelling Headphones</h3>
+                            <p class="text-sm text-gray-500 mb-3 line-clamp-2">Premium immersive sound with active noise cancellation technology.</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="font-bold text-xl text-gray-900">$50.00</span>
+                                <button onclick="addToCart(1, 'Noise-Cancelling Headphones', 50)" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm transition font-medium shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="group border border-gray-200 rounded-xl p-4 hover:shadow-md transition duration-200 hover:border-blue-200 bg-white">
+                            <div class="h-40 bg-gray-50 rounded-lg mb-4 flex items-center justify-center text-gray-300 group-hover:bg-blue-50 transition relative overflow-hidden">
+                                <i class="fa-solid fa-keyboard text-5xl group-hover:scale-110 transition duration-300 text-gray-400 group-hover:text-blue-400"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900">Mechanical Keyboard</h3>
+                            <p class="text-sm text-gray-500 mb-3 line-clamp-2">RGB backlit with tactile blue switches for typing precision.</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="font-bold text-xl text-gray-900">$100.00</span>
+                                <button onclick="addToCart(2, 'Mechanical Keyboard', 100)" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm transition font-medium shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="group border border-gray-200 rounded-xl p-4 hover:shadow-md transition duration-200 hover:border-blue-200 bg-white sm:col-span-2 md:col-span-1">
+                            <div class="h-40 bg-gray-50 rounded-lg mb-4 flex items-center justify-center text-gray-300 group-hover:bg-blue-50 transition relative overflow-hidden">
+                                <i class="fa-solid fa-computer-mouse text-5xl group-hover:scale-110 transition duration-300 text-gray-400 group-hover:text-blue-400"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900">Gaming Mouse</h3>
+                            <p class="text-sm text-gray-500 mb-3 line-clamp-2">High DPI sensor with ergonomic design for marathon sessions.</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="font-bold text-xl text-gray-900">$30.00</span>
+                                <button onclick="addToCart(3, 'Gaming Mouse', 30)" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm transition font-medium shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-6 border-b pb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-bag-shopping text-blue-500"></i>
+                            <h2 class="text-lg font-bold text-gray-800">Your Cart</h2>
+                        </div>
+                        <span id="cart-count-label" class="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-full">0 items</span>
+                    </div>
+
+                    <div id="empty-cart-msg" class="text-center py-12 flex flex-col items-center justify-center">
+                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-basket-shopping text-gray-300 text-2xl"></i>
+                        </div>
+                        <h3 class="text-gray-900 font-medium">Your cart is empty</h3>
+                        <p class="text-sm text-gray-500 mt-1">Looks like you haven't added anything yet.</p>
+                    </div>
+
+                    <div id="cart-items-container" class="space-y-4">
+                        </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-5 relative">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-24">
+                    <div class="flex items-center gap-2 mb-6 border-b pb-4">
+                        <i class="fa-regular fa-credit-card text-blue-500"></i>
+                        <h2 class="text-lg font-bold text-gray-800">Order Summary</h2>
+                    </div>
+
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Discount Code</label>
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text" id="discount-code" placeholder="e.g. SAVE15" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase placeholder-gray-400 transition">
+                            </div>
+                            <button onclick="applyDiscount()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">Apply</button>
+                        </div>
+                        <div id="discount-message" class="text-xs mt-2 h-4 transition-all"></div>
+                    </div>
+
+                    <div class="space-y-3 text-sm mb-6 pb-6 border-b border-gray-100">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span id="subtotal" class="font-medium text-gray-900">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span id="shipping-display" class="font-medium text-gray-900">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-green-600 font-medium hidden animate-slide-up" id="discount-row">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-check-circle text-xs"></i> Discount (15%)</span>
+                            <span id="discount-amount">-$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-end mb-8">
+                        <span class="text-gray-600 font-medium">Total Amount</span>
+                        <span id="total-price" class="text-3xl font-bold text-gray-900 tracking-tight">$0.00</span>
+                    </div>
+
+                    <form id="checkout-form" onsubmit="event.preventDefault(); validateAndPay();" class="space-y-5">
+                        
+                        <div>
+                            <h3 class="font-semibold text-sm mb-3 text-gray-900">Shipping Method</h3>
+                            <div class="space-y-3">
+                                <label class="block cursor-pointer group">
+                                    <input type="radio" name="shipping" value="standard" checked onchange="updateTotal()" class="hidden">
+                                    <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between transition-all group-hover:border-blue-300">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-blue-400 input-radio-circle">
+                                                <div class="w-2 h-2 rounded-full bg-blue-600 opacity-0 transition-opacity input-radio-dot"></div>
+                                            </div>
+                                            <div class="text-sm">
+                                                <div class="font-medium text-gray-900">Standard Delivery</div>
+                                                <div class="text-xs text-gray-500">5-7 Business Days</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-sm font-bold text-gray-900">Free</span>
+                                    </div>
+                                </label>
+                                
+                                <label class="block cursor-pointer group">
+                                    <input type="radio" name="shipping" value="express" onchange="updateTotal()" class="hidden">
+                                    <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between transition-all group-hover:border-blue-300">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-blue-400 input-radio-circle">
+                                                <div class="w-2 h-2 rounded-full bg-blue-600 opacity-0 transition-opacity input-radio-dot"></div>
+                                            </div>
+                                            <div class="text-sm">
+                                                <div class="font-medium text-gray-900">Express Delivery</div>
+                                                <div class="text-xs text-gray-500">1-2 Business Days</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-sm font-bold text-gray-900">$10.00</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-semibold text-sm mb-3 text-gray-900 mt-6">Customer Details</h3>
+                            
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Full Name <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-regular fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input type="text" id="name" onblur="validateField('name')" placeholder="John Doe" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                </div>
+                                <p id="error-name" class="text-red-600 text-xs mt-1 hidden flex items-center gap-1 font-medium animate-fade-in"><i class="fa-solid fa-circle-exclamation"></i> Name is required.</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Email Address <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-regular fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input type="text" id="email" onblur="validateField('email')" placeholder="john@example.com" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                </div>
+                                <p id="error-email" class="text-red-600 text-xs mt-1 hidden flex items-center gap-1 font-medium animate-fade-in"><i class="fa-solid fa-circle-exclamation"></i> Invalid email format.</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Shipping Address <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-map-pin absolute left-3 top-3 text-gray-400 text-sm"></i>
+                                    <textarea id="address" onblur="validateField('address')" placeholder="123 Main St, City, Country" rows="2" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+                                </div>
+                                <p id="error-address" class="text-red-600 text-xs mt-1 hidden flex items-center gap-1 font-medium animate-fade-in"><i class="fa-solid fa-circle-exclamation"></i> Address is required.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-semibold text-sm mb-3 text-gray-900">Payment Method <span class="text-red-500">*</span></h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment" value="card" onchange="validateField('payment')" class="hidden">
+                                    <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition flex flex-col items-center justify-center gap-2 h-20 bg-white">
+                                        <i class="fa-regular fa-credit-card text-xl text-gray-600"></i>
+                                        <span class="text-xs font-medium text-gray-700">Credit Card</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment" value="paypal" onchange="validateField('payment')" class="hidden">
+                                    <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition flex flex-col items-center justify-center gap-2 h-20 bg-white">
+                                        <i class="fa-brands fa-paypal text-xl text-blue-700"></i>
+                                        <span class="text-xs font-medium text-gray-700">PayPal</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <p id="error-payment" class="text-red-600 text-xs mt-2 hidden text-center font-medium animate-fade-in"><i class="fa-solid fa-circle-exclamation"></i> Please select a payment method.</p>
+                        </div>
+
+                        <button type="submit" id="pay-btn" class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-3.5 rounded-lg shadow-lg hover:shadow-xl transition-all transform active:scale-[0.98] flex justify-center items-center gap-2 mt-4 overflow-hidden relative group">
+                            <span id="pay-btn-text">Pay Now</span>
+                            <i id="pay-btn-icon" class="fa-solid fa-lock text-xs opacity-75"></i>
+                            
+                            <div id="pay-spinner" class="hidden absolute inset-0 bg-green-700 flex items-center justify-center">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            </div>
+                        </button>
+                    </form>
+
+                    <div id="success-message" class="hidden mt-6 p-6 bg-green-50 border border-green-200 rounded-xl text-center animate-fade-in shadow-inner">
+                        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                            <i class="fa-solid fa-check text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-green-800 font-bold text-lg mb-1">Payment Successful!</h3>
+                        <p class="text-green-600 text-sm">Your order has been placed successfully.</p>
+                        <button onclick="location.reload()" class="mt-4 text-green-700 text-sm font-medium hover:underline">Place another order</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-8 text-center mt-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <p class="text-sm text-gray-500">&copy; 2024 TechGear Demo Shop. Built strictly for <span class="font-bold text-gray-700">QA Automation Testing</span>.</p>
+            <div class="mt-4 flex justify-center gap-4 text-gray-400">
+                <i class="fa-brands fa-github hover:text-gray-600 cursor-pointer"></i>
+                <i class="fa-brands fa-linkedin hover:text-gray-600 cursor-pointer"></i>
+                <i class="fa-solid fa-envelope hover:text-gray-600 cursor-pointer"></i>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // State
+        let cart = [];
+        let discountRate = 0;
+
+        // --- Core Functions ---
+
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            
+            renderCart();
+            updateBadge();
+            showToast(`Added ${name} to cart`);
+        }
+
+        function removeFromCart(id) {
+            const item = cart.find(i => i.id === id);
+            if(item) showToast(`Removed ${item.name} from cart`);
+            
+            cart = cart.filter(item => item.id !== id);
+            
+            // Crucial: Reset discount if cart becomes empty, or re-apply based on remaining items (if any complex rules existed)
+            if (cart.length === 0) {
+                discountRate = 0;
+            }
+            
+            renderCart();
+            updateBadge();
+        }
+
+        function updateQuantity(id, newQty) {
+            const item = cart.find(item => item.id === id);
+            if (item) {
+                const qty = parseInt(newQty);
+                if (qty > 0) {
+                    item.quantity = qty;
+                } else {
+                    removeFromCart(id);
+                    return;
+                }
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            const countLabel = document.getElementById('cart-count-label');
+
+            const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+            countLabel.innerText = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+
+            if (cart.length === 0) {
+                container.innerHTML = '';
+                emptyMsg.style.display = 'flex';
+                updateTotal();
+                return;
+            }
+
+            emptyMsg.style.display = 'none';
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-start justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 animate-fade-in">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-gray-800">${item.name}</h4>
+                        <div class="text-gray-500 text-xs mt-0.5">$${item.price.toFixed(2)} each</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center border bg-white rounded-md overflow-hidden">
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" class="px-2 py-1 hover:bg-gray-100 text-gray-600 text-xs transition border-r">-</button>
+                            <input type="text" readonly value="${item.quantity}" class="w-8 text-center text-xs font-medium focus:outline-none">
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" class="px-2 py-1 hover:bg-gray-100 text-gray-600 text-xs transition border-l">+</button>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="text-red-400 hover:text-red-600 transition p-1 rounded hover:bg-red-50" title="Remove Item">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            updateTotal();
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('cart-badge');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            badge.innerText = totalItems;
+            if (totalItems > 0) {
+                badge.classList.remove('scale-0');
+                badge.classList.add('scale-100');
+            } else {
+                badge.classList.remove('scale-100');
+                badge.classList.add('scale-0');
+            }
+        }
+
+        // --- FIX IMPLEMENTED HERE FOR DC-003 ---
+        function applyDiscount() {
+            const codeInput = document.getElementById('discount-code');
+            const messageEl = document.getElementById('discount-message');
+            const discountRow = document.getElementById('discount-row');
+            const code = codeInput.value.trim().toUpperCase();
+
+            // Clear previous styles and validation styling
+            messageEl.classList.remove('text-green-600', 'text-red-600', 'font-medium');
+            codeInput.classList.remove('ring-2', 'ring-red-300', 'border-red-500');
+
+            if (code === 'SAVE15') {
+                if (discountRate > 0.0) {
+                    // This handles the case where the user re-applies SAVE15
+                    messageEl.innerText = "Error: A discount is already active.";
+                    messageEl.classList.add('text-red-600', 'font-medium');
+                } else {
+                    // Apply SAVE15
+                    discountRate = 0.15;
+                    messageEl.innerText = "Success: 15% discount applied!";
+                    messageEl.classList.add('text-green-600', 'font-medium');
+                    discountRow.classList.remove('hidden');
+                    showToast("Coupon Applied Successfully!");
+                }
+            } else if (code === "") {
+                // User cleared the input and pressed Apply (removes discount)
+                discountRate = 0;
+                messageEl.innerText = "Discount code removed.";
+                messageEl.classList.add('text-gray-600', 'font-medium');
+                discountRow.classList.add('hidden');
+            } else {
+                // Invalid code (e.g., EXTRA10) - Crucial for DC-003: DO NOT reset discountRate
+                if (discountRate > 0.0) {
+                    // A discount is already active. Just show the error for the new code.
+                    messageEl.innerText = "Error: Cannot apply second discount. Previous discount preserved.";
+                } else {
+                    // No discount applied yet, just show invalid code error.
+                    messageEl.innerText = "Error: Invalid discount code.";
+                }
+                
+                messageEl.classList.add('text-red-600', 'font-medium');
+                
+                // Shake animation for error
+                codeInput.classList.add('ring-2', 'ring-red-300', 'border-red-500');
+            }
+            updateTotal();
+        }
+        // ------------------------------------
+
+        function updateTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const shippingRadio = document.querySelector('input[name="shipping"]:checked');
+            const shippingCost = shippingRadio && shippingRadio.value === 'express' ? 10 : 0;
+            
+            const discountAmount = subtotal * discountRate;
+            const total = subtotal + shippingCost - discountAmount;
+
+            // Update UI elements
+            animateValue('subtotal', subtotal);
+            document.getElementById('shipping-display').innerText = shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`;
+            document.getElementById('discount-amount').innerText = `-$${discountAmount.toFixed(2)}`;
+            animateValue('total-price', total);
+            
+            // Ensure discount row visibility is managed by discountRate/applyDiscount (if discountRate > 0 and discountRow is hidden, show it)
+            if (discountRate > 0.0 && document.getElementById('discount-row').classList.contains('hidden')) {
+                document.getElementById('discount-row').classList.remove('hidden');
+            } else if (discountRate === 0.0 && !document.getElementById('discount-row').classList.contains('hidden')) {
+                 document.getElementById('discount-row').classList.add('hidden');
+            }
+        }
+
+        // --- Validation Logic ---
+
+        // Helper to show/hide errors
+        function toggleError(id, show) {
+            const el = document.getElementById(id);
+            const inputId = id.replace('error-', '');
+            const input = document.getElementById(inputId); // might be null for payment radios
+
+            if (show) {
+                el.classList.remove('hidden');
+                if(input && input.tagName !== 'DIV') { // Don't style radio container
+                    input.classList.add('border-red-300', 'focus:ring-red-200');
+                    input.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                }
+            } else {
+                el.classList.add('hidden');
+                if(input && input.tagName !== 'DIV') {
+                    input.classList.remove('border-red-300', 'focus:ring-red-200');
+                    input.classList.add('border-gray-300', 'focus:ring-blue-500');
+                }
+            }
+        }
+
+        function validateField(fieldName) {
+            let isValid = true;
+
+            if (fieldName === 'name') {
+                const val = document.getElementById('name').value.trim();
+                if (!val) { toggleError('error-name', true); isValid = false; }
+                else toggleError('error-name', false);
+            }
+
+            if (fieldName === 'email') {
+                const val = document.getElementById('email').value.trim();
+                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!regex.test(val)) { toggleError('error-email', true); isValid = false; }
+                else toggleError('error-email', false);
+            }
+
+            if (fieldName === 'address') {
+                const val = document.getElementById('address').value.trim();
+                if (!val) { toggleError('error-address', true); isValid = false; }
+                else toggleError('error-address', false);
+            }
+
+            if (fieldName === 'payment') {
+                const val = document.querySelector('input[name="payment"]:checked');
+                if (!val) { toggleError('error-payment', true); isValid = false; }
+                else toggleError('error-payment', false);
+            }
+
+            return isValid;
+        }
+
+        function validateAndPay() {
+            // Validate all fields
+            const v1 = validateField('name');
+            const v2 = validateField('email');
+            const v3 = validateField('address');
+            const v4 = validateField('payment');
+            
+            let isValid = v1 && v2 && v3 && v4;
+
+            if (cart.length === 0) {
+                showToast("Your cart is empty!", "error");
+                isValid = false;
+            }
+
+            if (isValid) {
+                // Simulate Processing
+                const btn = document.getElementById('pay-btn');
+                const spinner = document.getElementById('pay-spinner');
+                
+                btn.disabled = true;
+                spinner.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    spinner.classList.add('hidden');
+                    document.getElementById('checkout-form').style.display = 'none';
+                    document.getElementById('success-message').classList.remove('hidden');
+                    document.getElementById('success-message').scrollIntoView({ behavior: 'smooth' });
+                }, 1500); // 1.5s delay
+            }
+        }
+
+        // --- UX Utilities ---
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Colors based on type
+            const bgClass = type === 'error' ? 'bg-red-800' : 'bg-gray-800';
+            const icon = type === 'error' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-circle-check"></i>';
+
+            toast.className = `${bgClass} text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+
+            // Remove after 3s
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Simple number animation
+        function animateValue(id, value) {
+            const obj = document.getElementById(id);
+            obj.innerHTML = `$${value.toFixed(2)}`;
+            // In a real app we might tween the numbers, but simple replacement works for Selenium reliability
+        }
+
+        // --- CSS Injection for Radio custom styles ---
+        document.head.insertAdjacentHTML("beforeend", `<style>
+            .input-radio-circle { transition: border-color 0.2s; }
+            input[type="radio"]:checked + div .input-radio-circle { border-color: #2563eb; }
+            input[type="radio"]:checked + div .input-radio-dot { opacity: 1; }
+        </style>`)
+    </script>
+</body>
+</html>
