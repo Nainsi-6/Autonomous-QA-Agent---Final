@@ -1,0 +1,27 @@
+UI/UX Guidelines for Checkout Page
+
+Visual Style
+
+The "Pay Now" button must be Green (#22c55e) to indicate success/primary action.
+
+"Add to Cart" buttons should be Blue.
+
+The cart badge should only be visible when items are in the cart.
+
+Error Handling
+
+All validation errors must be displayed in Red text (#ef4444).
+
+Error messages must appear immediately below the invalid input field.
+
+Users cannot submit the form if there are validation errors.
+
+Required Fields
+
+Name (Text)
+
+Email (Must contain '@' and '.')
+
+Shipping Address
+
+Payment Method Selection
