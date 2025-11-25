@@ -1,0 +1,26 @@
+{
+  "project_name": "TechGear Checkout API",
+  "version": "1.0",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/validate_coupon",
+      "description": "Checks if a coupon code is valid.",
+      "payload": { "code": "string" },
+      "responses": {
+        "200": { "valid": true, "discount_percent": 15 },
+        "400": { "valid": false, "message": "Invalid code" }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/process_payment",
+      "description": "Processes the final transaction.",
+      "payload": {
+        "user_details": { "name": "string", "email": "string", "address": "string" },
+        "payment_method": "enum['card', 'paypal']",
+        "total_amount": "float"
+      }
+    }
+  ]
+}
